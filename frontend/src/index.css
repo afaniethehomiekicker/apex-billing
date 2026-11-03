@@ -1,0 +1,11 @@
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
+
+html, body, #root { height: 100%; }
+body { background: #f4f4f5; color: #18181b; }
+.dark body { background: #09090b; color: #f4f4f5; }
+
+/* Report chart series (validated for colour-blind separation and contrast
+   in both modes): 1 = billed, 2 = collected. */
+:root { --series-1: #2a78d6; --series-2: #eb6834; --chart-grid: #e4e4e7; }
+.dark { --series-1: #3987e5; --series-2: #d95926; --chart-grid: #27272a; }

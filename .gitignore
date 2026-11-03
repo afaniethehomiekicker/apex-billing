@@ -1,0 +1,25 @@
+# Secrets and settings: NEVER commit these
+.env
+.env.*
+env.cleaned
+*.pem
+*.key
+*.crt
+*.p12
+*.pfx
+tls/
+pgpass.conf
+
+# Data: client slips, logos, contracts, backups
+uploads/
+storage/
+*.dump
+*.backup
+
+# Built programs and build output
+apex-billing
+apex-billing.exe
+*.exe
+frontend/dist/
+frontend/node_modules
+scripts/check-build.log
