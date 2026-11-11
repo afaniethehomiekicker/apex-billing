@@ -12,6 +12,21 @@ APP=/opt/apex-billing
 SERVICE=apex-billing
 export GOTOOLCHAIN=auto
 
+# deploy.bat runs this over a plain SSH command, which doesn't load the
+# login settings (~/.profile, ~/.bashrc), so Node (nvm) and Go may not be
+# on PATH. Find them here.
+export PATH="/usr/local/go/bin:/root/go/bin:/usr/local/bin:/usr/bin:/bin:/usr/local/sbin:/usr/sbin:/sbin:$PATH"
+export NVM_DIR="${NVM_DIR:-/root/.nvm}"
+if ! command -v npm >/dev/null 2>&1 && [ -s "$NVM_DIR/nvm.sh" ]; then
+  set +u; . "$NVM_DIR/nvm.sh" >/dev/null; nvm use default >/dev/null 2>&1 || true; set -u
+fi
+if ! command -v npm >/dev/null 2>&1 && [ -d "$NVM_DIR/versions/node" ]; then
+  NODE_BIN=$(ls -d "$NVM_DIR"/versions/node/*/bin 2>/dev/null | sort -V | tail -n 1)
+  [ -n "$NODE_BIN" ] && export PATH="$NODE_BIN:$PATH"
+fi
+command -v npm >/dev/null 2>&1 || { printf '\nDEPLOY FAILED: npm not found on the server (run: which npm, in an SSH window)\n' >&2; exit 1; }
+command -v go  >/dev/null 2>&1 || { printf '\nDEPLOY FAILED: go not found on the server (run: which go, in an SSH window)\n' >&2; exit 1; }
+
 step() { printf '\n==> %s\n' "$*"; }
 fail() { printf '\nDEPLOY FAILED: %s\n' "$*" >&2; exit 1; }
 
