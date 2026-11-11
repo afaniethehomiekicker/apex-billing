@@ -71,7 +71,8 @@ export const InvoicePrint = ({ id }) => {
 
   // Unit and category come from each service line's product.
   const info = new Map((data.line_info || []).map(x => [x.line_id, x]));
-  const catOf = (l) => (info.get(l.id)?.category || '').trim();
+  const catOf = (l) => (l.category || info.get(l.id)?.category || '').trim();
+  const unitOf = (l) => l.unit || info.get(l.id)?.unit || '';
   const anyCat = lines.some(l => catOf(l));
   const groups = [];
   if (anyCat) {
@@ -245,7 +246,7 @@ export const InvoicePrint = ({ id }) => {
                       {tx && <div className="text-[9.5px] text-slate-400">{tx}</div>}
                     </td>
                     <td className={`${td} text-right num`}>{Number(l.quantity)}</td>
-                    <td className={`${td} text-slate-600`}>{info.get(l.id)?.unit || ''}</td>
+                    <td className={`${td} text-slate-600`}>{unitOf(l)}</td>
                     <td className={`${td} text-right num`}>{money(l.rate)}</td>
                     <td className={`${td} text-right font-semibold num`}>{money(l.amount)}</td>
                   </tr>

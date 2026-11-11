@@ -211,11 +211,14 @@ func GetInvoice(c *gin.Context) {
 // ---- drafts -----------------------------------------------------------------
 
 type lineInput struct {
-	ID          uint    `json:"id"` // an existing line of this draft; 0 = new typed-in line
-	Description string  `json:"description"`
-	Reference   string  `json:"reference"`
-	Quantity    float64 `json:"quantity"`
-	Rate        float64 `json:"rate"`
+	ID          uint   `json:"id"` // an existing line of this draft; 0 = new typed-in line
+	Description string `json:"description"`
+	Reference   string `json:"reference"`
+	// Heading and unit printed on the invoice. Left out (null): unchanged.
+	Category *string `json:"category"`
+	Unit     *string `json:"unit"`
+	Quantity float64 `json:"quantity"`
+	Rate     float64 `json:"rate"`
 	// The line's taxes. Left out (null): an existing line keeps its taxes,
 	// a new line has none.
 	TaxIDs []uint `json:"tax_ids"`
@@ -268,6 +271,16 @@ func applyLines(inv *models.Invoice, in []lineInput, taxes map[uint]models.Tax) 
 		}
 		if l.Reference, ok = trimTo(li.Reference, 100); !ok {
 			return "Line " + n + ": reference is too long"
+		}
+		if li.Category != nil {
+			if l.Category, ok = trimTo(*li.Category, 60); !ok {
+				return "Line " + n + ": heading is too long (max 60)"
+			}
+		}
+		if li.Unit != nil {
+			if l.Unit, ok = trimTo(*li.Unit, 40); !ok {
+				return "Line " + n + ": unit is too long (max 40)"
+			}
 		}
 		if badNumber(li.Quantity) || li.Quantity <= 0 || li.Quantity > 1000000 {
 			return "Line " + n + ": quantity must be more than 0"

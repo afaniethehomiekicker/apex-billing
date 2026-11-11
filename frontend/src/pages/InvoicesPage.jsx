@@ -317,6 +317,10 @@ const InvoiceDetail = ({ id }) => {
   const draft = inv.status === 'draft';
   const editable = draft && data.can_manage;
   const cur = inv.currency || 'PKR';
+  // Heading / unit of a service line's product (used when the line has none).
+  const prodInfoMap = new Map((data.line_info || []).map(x => [x.line_id, x]));
+  const prodInfo = (l) => (l.id ? prodInfoMap.get(l.id) : null);
+  const headingChoices = [...new Set([...form.lines.map(l => (l.category || '').trim()), ...(data.line_info || []).map(x => (x.category || '').trim())].filter(Boolean))];
 
   const change = (patch) => { setForm(f => ({ ...f, ...patch })); setDirty(true); };
   const setLine = (i, k, v) => change({ lines: form.lines.map((l, j) => (j === i ? { ...l, [k]: v } : l)) });
@@ -356,7 +360,7 @@ const InvoiceDetail = ({ id }) => {
     invoice_date: form.invoice_date, due_date: form.due_date, notes: form.notes,
     ...(Number(inv.tax_percent) > 0 ? { tax_percent: n(form.tax_percent) || 0 } : {}),
     lines: form.lines.map(l => ({
-      id: l.id || 0, description: l.description, reference: l.reference || '', quantity: n(l.quantity), rate: n(l.rate), tax_ids: l.tax_ids || [],
+      id: l.id || 0, description: l.description, reference: l.reference || '', category: l.category || '', unit: l.unit || '', quantity: n(l.quantity), rate: n(l.rate), tax_ids: l.tax_ids || [],
     })),
   });
   const save = () => act('save', async () => { await api(`/api/invoices/${inv.id}`, { method: 'PUT', body: saveBody() }); load(); });
@@ -443,11 +447,12 @@ const InvoiceDetail = ({ id }) => {
           {editable && (
             <div className="flex flex-wrap gap-2">
               <Button variant="secondary" icon={ListPlus} busy={busy === 'due'} onClick={addDue}>Add due service charges</Button>
-              <Button variant="secondary" icon={Plus} onClick={() => change({ lines: [...form.lines, { description: '', reference: '', quantity: '1', rate: '', tax_ids: [] }] })}>Add line</Button>
+              <Button variant="secondary" icon={Plus} onClick={() => change({ lines: [...form.lines, { description: '', reference: '', category: form.lines.length ? (form.lines[form.lines.length - 1].category || '') : '', unit: '', quantity: '1', rate: '', tax_ids: [] }] })}>Add line</Button>
             </div>
           )}
         </div>
         <div className="overflow-x-auto rounded-xl border border-zinc-200 dark:border-zinc-800 bg-white dark:bg-zinc-900">
+          <datalist id="invoice-headings">{headingChoices.map(h => <option key={h} value={h} />)}</datalist>
           <table className="w-full text-sm">
             <thead className="bg-zinc-50 dark:bg-zinc-800/60 text-zinc-600 dark:text-zinc-300 text-xs">
               <tr>
@@ -470,11 +475,18 @@ const InvoiceDetail = ({ id }) => {
                       <div className="space-y-1">
                         <Input value={l.description} onChange={(e) => setLine(i, 'description', e.target.value)} maxLength={300} placeholder="Description" />
                         <Input value={l.reference || ''} onChange={(e) => setLine(i, 'reference', e.target.value)} maxLength={100} placeholder="Circuit ID / reference (optional)" className="!py-1 text-xs" />
+                        <div className="flex gap-1">
+                          <Input value={l.category || ''} onChange={(e) => setLine(i, 'category', e.target.value)} maxLength={60} list="invoice-headings"
+                            placeholder={prodInfo(l)?.category ? `Heading: ${prodInfo(l).category} (from product)` : 'Heading, e.g. IT Services (optional)'} className="!py-1 text-xs flex-1 min-w-0" />
+                          <Input value={l.unit || ''} onChange={(e) => setLine(i, 'unit', e.target.value)} maxLength={40}
+                            placeholder={prodInfo(l)?.unit ? `Unit: ${prodInfo(l).unit}` : 'Unit, e.g. Month'} className="!py-1 text-xs !w-32 shrink-0" />
+                        </div>
                         <TaxPicker compact taxes={taxes} companyId={form.company_id} value={l.tax_ids} onChange={(ids) => setLine(i, 'tax_ids', ids)} />
                       </div>
                     ) : (
                       <>
                         <div>{l.description}</div>{l.reference && <div className="text-xs text-zinc-500">{l.reference}</div>}
+                        {(l.category || prodInfo(l)?.category) && <div className="text-[11px] text-indigo-600 dark:text-indigo-400">{l.category || prodInfo(l).category}</div>}
                         {(l.taxes || []).length > 0 && <div className="text-[11px] text-zinc-500">{l.taxes.map(t => `${t.kind === 'deduct' ? '−' : ''}${taxShort(t)}`).join(' · ')}</div>}
                       </>
                     )}

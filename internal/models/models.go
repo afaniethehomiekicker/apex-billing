@@ -571,11 +571,16 @@ type InvoiceLine struct {
 	ProrateDays    int        `gorm:"not null;default:0" json:"prorate_days"` // 0 = full period
 	ProrateOf      int        `gorm:"not null;default:0" json:"prorate_of"`
 
-	Description string  `gorm:"size:300;not null" json:"description"`
-	Reference   string  `gorm:"size:100" json:"reference"`
-	Quantity    float64 `gorm:"type:numeric(12,2);not null;default:1" json:"quantity"`
-	Rate        float64 `gorm:"type:numeric(14,2);not null;default:0" json:"rate"`
-	Amount      float64 `gorm:"type:numeric(14,2);not null;default:0" json:"amount"`
+	Description string `gorm:"size:300;not null" json:"description"`
+	Reference   string `gorm:"size:100" json:"reference"`
+	// Category — the heading this line is grouped under on the printed
+	// invoice (e.g. "IT Services"); empty = the product's category, if any.
+	Category string `gorm:"size:60" json:"category"`
+	// Unit printed next to the quantity (e.g. "Month"); empty = the product's unit.
+	Unit     string  `gorm:"size:40" json:"unit"`
+	Quantity float64 `gorm:"type:numeric(12,2);not null;default:1" json:"quantity"`
+	Rate     float64 `gorm:"type:numeric(14,2);not null;default:0" json:"rate"`
+	Amount   float64 `gorm:"type:numeric(14,2);not null;default:0" json:"amount"`
 	// The taxes on this line, copied with their rates when the line is
 	// made or edited (a later rate change doesn't alter it).
 	Taxes []TaxApplied `gorm:"serializer:json;type:text" json:"taxes"`
