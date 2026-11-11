@@ -261,18 +261,33 @@ Privacy & Security → Certificates → View Certificates → Authorities → Im
 
 ## Updating to a new version later
 
-PC: commit and `git push` the changes (step 1, "Later changes").
+Make your changes on the PC, then in the apex-billing folder (PowerShell):
 
-Server:
 ```
-cd ~/apex-billing
-git pull
-./build.sh
-sudo /usr/local/sbin/apex-billing-backup
-sudo install -m 755 -o root -g root apex-billing /opt/apex-billing/apex-billing
-sudo systemctl restart apex-billing
-journalctl -u apex-billing -n 20 --no-pager
+.\deploy.bat "what you changed"
 ```
+
+That one command:
+1. saves your changes in Git (refusing `.env`, keys, uploads — nothing is
+   uploaded if one of those is included),
+2. uploads them to GitHub,
+3. on the server: downloads them, runs the tests, builds, backs up the
+   database and uploads, installs the new version, restarts it and checks it
+   answers. **If the new version doesn't start, the previous one is put back
+   automatically.**
+
+`.\deploy.bat` with no description re-deploys what is already on GitHub.
+It needs your SSH key on the server (no password is asked).
+
+If a deploy stops, nothing changed on the live app unless the message says
+so; read the last lines it printed. The server script is
+`scripts/update-server.sh`; the version running is in
+`/opt/apex-billing/DEPLOYED_COMMIT`, the one before it in
+`/opt/apex-billing/apex-billing.prev`.
+
+Note: database changes made by a new version (new tables / columns) are not
+undone by going back to the previous program — that's what the backup made
+just before is for.
 
 ## If something goes wrong
 

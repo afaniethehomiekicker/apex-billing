@@ -13,7 +13,7 @@ import {
 // A client's own rate is set on their service, so changing a default rate
 // here never changes what existing clients pay.
 
-const EMPTY = { code: '', name: '', description: '', unit: '', charge_type: 'monthly', default_rate: '', active: true, tax_ids: [] };
+const EMPTY = { code: '', name: '', description: '', unit: '', category: '', charge_type: 'monthly', default_rate: '', active: true, tax_ids: [] };
 
 const ProductForm = ({ product, onClose, onSaved }) => {
   const [form, setForm] = useState(() => (product
@@ -90,6 +90,9 @@ const ProductForm = ({ product, onClose, onSaved }) => {
         </Field>
         <Field label="Unit" hint="Optional: link, Mbps, line…">
           <Input value={form.unit} onChange={set('unit')} maxLength={40} />
+        </Field>
+        <Field label="Category" className="sm:col-span-3" hint="Optional. Invoices group their lines under this heading, e.g. IT Services, Servers & Hosting, Software & Licenses.">
+          <Input value={form.category || ''} onChange={set('category')} maxLength={60} placeholder="IT Services" />
         </Field>
         <Field label="Taxes" className="sm:col-span-3" hint={companies.length > 1 ? 'New services of this product get the ones of their billing company (each service can change its own).' : 'New services of this product get these taxes (each service can change its own).'}>
           {!taxes ? <Spinner /> : <TaxPicker taxes={taxes} companies={companies} value={form.tax_ids} onChange={(ids) => setForm(f => ({ ...f, tax_ids: ids }))} />}
@@ -185,7 +188,7 @@ export const ProductsPage = () => {
             <tr key={p.id} className="border-t border-zinc-100 dark:border-zinc-800">
               <td className="px-3 py-2">
                 <div className="font-semibold">{p.name}</div>
-                <div className="text-[11px] text-zinc-500">{[p.code, p.unit && `per ${p.unit}`].filter(Boolean).join(' · ')}</div>
+                <div className="text-[11px] text-zinc-500">{[p.category, p.code, p.unit && `per ${p.unit}`].filter(Boolean).join(' · ')}</div>
               </td>
               <td className="px-3 py-2 whitespace-nowrap">{CHARGE_TYPES[p.charge_type]}</td>
               <td className="px-3 py-2 text-right whitespace-nowrap">{formatMoney(p.default_rate)} <span className="text-xs text-zinc-500">{CHARGE_SHORT[p.charge_type]}</span></td>

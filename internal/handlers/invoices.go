@@ -193,8 +193,19 @@ func GetInvoice(c *gin.Context) {
 	payments := []payRow{}
 	database.DB.Raw(`SELECT p.id AS payment_id, p.payment_number, p.payment_date, p.method, p.status, a.amount
 		FROM payment_allocations a JOIN payments p ON p.id = a.payment_id WHERE a.invoice_id = ? ORDER BY p.payment_date, p.id`, inv.ID).Scan(&payments)
+	// Unit and category of each service line's product, for the printed
+	// invoice (it groups lines by category). Typed-in lines have none.
+	type lineInfo struct {
+		LineID   uint   `json:"line_id"`
+		Unit     string `json:"unit"`
+		Category string `json:"category"`
+	}
+	lineInfos := []lineInfo{}
+	database.DB.Raw(`SELECT l.id AS line_id, COALESCE(p.unit, '') AS unit, COALESCE(p.category, '') AS category
+		FROM invoice_lines l JOIN subscriptions s ON s.id = l.subscription_id JOIN products p ON p.id = s.product_id
+		WHERE l.invoice_id = ?`, inv.ID).Scan(&lineInfos)
 	c.JSON(http.StatusOK, gin.H{"invoice": inv, "company": company, "history": history, "today": today(), "payments": payments,
-		"can_manage": auth.Can(auth.User(c).Role, "manage_billing")})
+		"line_info": lineInfos, "can_manage": auth.Can(auth.User(c).Role, "manage_billing")})
 }
 
 // ---- drafts -----------------------------------------------------------------

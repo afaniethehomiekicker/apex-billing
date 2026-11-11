@@ -267,10 +267,13 @@ type Product struct {
 	CreatedAt time.Time `json:"created_at"`
 	UpdatedAt time.Time `json:"updated_at"`
 
-	Code        string  `gorm:"size:30;index" json:"code"`           // optional short code, e.g. MPLS-10M
-	Name        string  `gorm:"size:200;not null;index" json:"name"` // printed on invoices
-	Description string  `gorm:"type:text" json:"description"`
-	Unit        string  `gorm:"size:40" json:"unit"` // e.g. "link", "Mbps" (printed after the quantity)
+	Code        string `gorm:"size:30;index" json:"code"`           // optional short code, e.g. MPLS-10M
+	Name        string `gorm:"size:200;not null;index" json:"name"` // printed on invoices
+	Description string `gorm:"type:text" json:"description"`
+	Unit        string `gorm:"size:40" json:"unit"` // e.g. "link", "Mbps" (printed after the quantity)
+	// Category — optional group heading on printed invoices, e.g.
+	// "IT Services", "Servers & Hosting". Lines are grouped by it.
+	Category    string  `gorm:"size:60;index" json:"category"`
 	ChargeType  string  `gorm:"size:20;not null;default:'monthly'" json:"charge_type"`
 	DefaultRate float64 `gorm:"type:numeric(14,2);not null;default:0" json:"default_rate"`
 	Active      bool    `gorm:"not null;default:true;index" json:"active"` // inactive: can't be added to clients any more

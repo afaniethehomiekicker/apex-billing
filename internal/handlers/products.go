@@ -30,6 +30,7 @@ type productInput struct {
 	Name        string  `json:"name"`
 	Description string  `json:"description"`
 	Unit        string  `json:"unit"`
+	Category    string  `json:"category"`
 	ChargeType  string  `json:"charge_type"`
 	DefaultRate float64 `json:"default_rate"`
 	Active      *bool   `json:"active"`
@@ -52,6 +53,9 @@ func applyProductInput(in productInput, p *models.Product) string {
 	}
 	if p.Unit, ok = trimTo(in.Unit, 40); !ok {
 		return "Unit is too long"
+	}
+	if p.Category, ok = trimTo(in.Category, 60); !ok {
+		return "Category is too long (max 60)"
 	}
 	ct := strings.TrimSpace(in.ChargeType)
 	if _, ok := models.ChargeTypes[ct]; !ok {
@@ -228,6 +232,7 @@ func UpdateProduct(c *gin.Context) {
 	ch.add("Name", old.Name, p.Name)
 	ch.add("Description", old.Description, p.Description)
 	ch.add("Unit", old.Unit, p.Unit)
+	ch.add("Category", old.Category, p.Category)
 	ch.add("Charge type", models.ChargeTypes[old.ChargeType], models.ChargeTypes[p.ChargeType])
 	ch.add("Default rate", money(old.DefaultRate), money(p.DefaultRate))
 	ch.add("Status", activeLabel[old.Active], activeLabel[p.Active])
