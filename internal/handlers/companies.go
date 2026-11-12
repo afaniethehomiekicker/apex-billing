@@ -93,11 +93,17 @@ func issuerOf(co *models.Company) models.Issuer {
 		NTN: co.NTN, STRN: co.STRN, BankDetails: co.BankDetails, InvoiceFooter: co.InvoiceFooter}
 }
 
-// cleanPrefix: upper case, letters and digits only, at most 6.
+// maxPrefixLen — longest invoice prefix, e.g. "JB-INV" (numbers are
+// prefix + "-000001").
+const maxPrefixLen = 12
+
+// cleanPrefix: upper case; letters, digits and single dashes inside (e.g.
+// JB-INV); at most maxPrefixLen.
 func cleanPrefix(p string) string {
 	p = prefixClean.ReplaceAllString(strings.ToUpper(p), "")
-	if len(p) > 6 {
-		p = p[:6]
+	p = strings.Trim(prefixDashes.ReplaceAllString(p, "-"), "-")
+	if len(p) > maxPrefixLen {
+		p = strings.TrimRight(p[:maxPrefixLen], "-")
 	}
 	return p
 }
@@ -268,8 +274,8 @@ func applyCompanyInput(in companyInput, co *models.Company) string {
 	if p == "" {
 		return "Enter the invoice number prefix (e.g. INV)"
 	}
-	if len(p) > 6 || cleanPrefix(p) != p {
-		return "The invoice prefix may only use letters and numbers (at most 6)"
+	if len(p) > maxPrefixLen || cleanPrefix(p) != p {
+		return fmt.Sprintf("The invoice prefix may only use letters, numbers and dashes, e.g. JB-INV (at most %d, no dash at the start or end)", maxPrefixLen)
 	}
 	if reservedPrefixes[p] {
 		return p + " is used for other numbers (clients, services, payments…); choose another prefix"

@@ -158,8 +158,8 @@ const CompanyEditor = ({ company, onSaved }) => {
               <Textarea rows={2} value={form.invoice_footer} onChange={set('invoice_footer')} maxLength={2000} />
             </Field>
             <Field label="Invoice number prefix" required
-              hint={`This company's invoices will be ${prefix}-000001, ${prefix}-000002… Each company needs its own prefix (letters and numbers, up to 6).`}>
-              <Input value={form.invoice_prefix} onChange={set('invoice_prefix')} maxLength={6} placeholder="e.g. INV" className="uppercase sm:max-w-[12rem]" />
+              hint={`This company's invoices will be ${prefix}-000001, ${prefix}-000002… Each company needs its own prefix (letters, numbers and dashes, e.g. JB-INV; up to 12).`}>
+              <Input value={form.invoice_prefix} onChange={set('invoice_prefix')} maxLength={12} placeholder="e.g. JB-INV" className="uppercase sm:max-w-[12rem]" />
             </Field>
           </Card>
         </div>

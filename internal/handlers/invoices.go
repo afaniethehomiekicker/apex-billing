@@ -757,7 +757,8 @@ func GenerateInvoices(c *gin.Context) {
 
 // ---- issue / cancel ---------------------------------------------------------
 
-var prefixClean = regexp.MustCompile(`[^A-Z0-9]`)
+var prefixClean = regexp.MustCompile(`[^A-Z0-9-]`)
+var prefixDashes = regexp.MustCompile(`-{2,}`)
 
 type issueInput struct {
 	IDs []uint `json:"ids"`

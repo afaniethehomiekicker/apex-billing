@@ -151,7 +151,7 @@ type Company struct {
 	InvoiceFooter string `gorm:"type:text" json:"invoice_footer"`
 	// Invoice numbers: PREFIX-000001; each company has its own prefix
 	// (unique) and counter.
-	InvoicePrefix string `gorm:"size:10;not null" json:"invoice_prefix"`
+	InvoicePrefix string `gorm:"size:20;not null" json:"invoice_prefix"`
 
 	// The logo printed on invoices: a PNG / JPG / WEBP in UPLOAD_DIR/logos/.
 	// A replaced logo's file is kept (issued invoices still point at it).
@@ -730,7 +730,7 @@ type PaymentAllocation struct {
 // come from here, incremented atomically, so two records created at the
 // same moment never get the same number.
 type IDCounter struct {
-	Prefix string `gorm:"primaryKey;size:10"`
+	Prefix string `gorm:"primaryKey;size:20"`
 	Last   int64  `gorm:"not null"`
 }
 

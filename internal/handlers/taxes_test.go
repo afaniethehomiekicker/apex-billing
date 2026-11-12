@@ -91,20 +91,23 @@ func TestTaxesPerCompany(t *testing.T) {
 }
 
 func TestInvoicePrefixes(t *testing.T) {
-	cases := map[string]string{"inv": "INV", "Apx-1": "APX1", "": "INV", "ABCDEFGH": "ABCDEF"}
+	cases := map[string]string{"inv": "INV", "Apx-1": "APX-1", "": "INV", "ABCDEFGHIJKLMN": "ABCDEFGHIJKL", "jb--inv-": "JB-INV", "J B_inv": "JBINV"}
 	for in, want := range cases {
 		if got := invoicePrefixOf(&models.Company{InvoicePrefix: in}); got != want {
 			t.Errorf("%q: got %q want %q", in, got, want)
 		}
 	}
 	co := models.Company{}
-	for _, p := range []string{"CUS", "pay", "AB-C", "TOOLONGX"} {
+	for _, p := range []string{"CUS", "pay", "AB_C", "-JB", "JB-", "JB--INV", "TOOLONGPREFIX1"} {
 		if msg := applyCompanyInput(companyInput{Name: "X", InvoicePrefix: p}, &co); msg == "" {
 			t.Errorf("prefix %q accepted", p)
 		}
 	}
 	if msg := applyCompanyInput(companyInput{Name: "X", InvoicePrefix: "net"}, &co); msg != "" || co.InvoicePrefix != "NET" {
 		t.Errorf("prefix net: %q %q", msg, co.InvoicePrefix)
+	}
+	if msg := applyCompanyInput(companyInput{Name: "X", InvoicePrefix: "jb-inv"}, &co); msg != "" || co.InvoicePrefix != "JB-INV" {
+		t.Errorf("prefix jb-inv: %q %q", msg, co.InvoicePrefix)
 	}
 	if msg := applyCompanyInput(companyInput{InvoicePrefix: "NET"}, &co); msg == "" {
 		t.Error("company without a name accepted")
